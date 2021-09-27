@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"go-with-docker/app/router"
 	"go-with-docker/config"
-	"log"
+	lr "go-with-docker/util/logger"
 	"net/http"
 )
 
@@ -12,8 +12,9 @@ func main() {
 	appConf := config.AppConfig()
 	address := fmt.Sprintf(":%d", appConf.Server.Port)
 	appRouter := router.New()
+	logger := lr.New(appConf.Debug)
 
-	log.Printf("running on localhost %s", address)
+	logger.Info().Msgf("running on localhost %s", address)
 
 	s := &http.Server{
 		Addr:         address,
@@ -24,6 +25,6 @@ func main() {
 	}
 
 	if err := s.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-		log.Fatal("Server startup failed")
+		logger.Fatal().Msg("Create server failure")
 	}
 }

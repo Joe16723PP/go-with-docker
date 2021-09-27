@@ -8,6 +8,7 @@ import (
 
 type Conf struct {
 	Server serverConf
+	Debug  bool `env:"DEBUG,required"`
 }
 
 // property in .env file
