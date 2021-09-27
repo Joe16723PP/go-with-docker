@@ -2,20 +2,25 @@ package main
 
 import (
 	"fmt"
+	"go-with-docker/config"
 	"log"
 	"net/http"
-	"time"
 )
+
 func main() {
+	appConfig := config.AppConfig()
+
+	address := fmt.Sprintf(":%d", appConfig.Server.Port)
+
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", Greet)
 	log.Println("Starting server :8080")
 	s := &http.Server{
-		Addr:         ":8080",
+		Addr:         address,
 		Handler:      mux,
-		ReadTimeout:  30 * time.Second,
-		WriteTimeout: 30 * time.Second,
-		IdleTimeout:  120 * time.Second,
+		ReadTimeout:  appConfig.Server.TimeoutRead,
+		WriteTimeout: appConfig.Server.TimeoutWrite,
+		IdleTimeout:  appConfig.Server.TimeoutIdle,
 	}
 	if err := s.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		log.Fatal("Server startup failed")
