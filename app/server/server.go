@@ -10,6 +10,14 @@ type App struct {
 	db     *gorm.DB
 }
 
+const (
+	appErrDataAccessFailure   = "data access failure"
+	appErrJsonCreationFailure = "json creation failure"
+	appErrDataCreationFailure = "data creation failure"
+	appErrFormDecodingFailure = "form decoding failure"
+	appErrDataUpdateFailure   = "data update failure"
+)
+
 func New(logger *logger.Logger, db *gorm.DB) *App {
 	return &App{
 		logger: logger,
