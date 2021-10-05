@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	dbConn "go-with-docker/adapter/gorm"
 	"go-with-docker/app/router"
 	"go-with-docker/app/server"
 	"go-with-docker/config"
@@ -13,7 +14,13 @@ func main() {
 	appConf := config.AppConfig()
 	address := fmt.Sprintf(":%d", appConf.Server.Port)
 	logger := lr.New(appConf.Debug)
-	application := server.New(logger)
+	db, err := dbConn.New(appConf)
+	if err != nil {
+		logger.Fatal().Err(err).Msg("")
+		return
+	}
+
+	application := server.New(logger, db)
 	appRouter := router.New(application)
 	logger.Info().Msgf("running on localhost %s", address)
 

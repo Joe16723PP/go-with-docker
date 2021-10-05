@@ -10,13 +10,20 @@ RUN go mod download
 
 COPY . .
 
-RUN go build -ldflags '-w -s' -a -o ./bin/app ./cmd/app
+RUN go build -ldflags '-w -s' -a -o ./bin/app ./cmd/app \
+    && go build -ldflags '-w -s' -a -o ./bin/migrate ./cmd/migrate
 
 # Deployment environment
 # ----------------------
 FROM alpine
-RUN apk update && apk add --no-cache bash
+RUN apk update && apk add --no-cache bash mysql-client
 
 COPY --from=build-env /go-with-docker/bin/app /go-with-docker/
+COPY --from=build-env /go-with-docker/bin/migrate /go-with-docker/
+COPY --from=build-env /go-with-docker/migrations /go-with-docker/migrations
+
+COPY --from=build-env /go-with-docker/docker/app/bin /usr/local/bin/go-with-docker/
+RUN chmod +x /usr/local/bin/go-with-docker/*
+
 EXPOSE 8080
 CMD ["/go-with-docker/app"]

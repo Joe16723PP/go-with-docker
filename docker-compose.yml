@@ -4,6 +4,9 @@ services:
     build:
       context: .
       dockerfile: ./docker/app/dockerfile
+    depends_on:
+      - db
+    command: [ "/usr/local/bin/go-with-docker/wait-for-mysql.sh", "db", "/usr/local/bin/go-with-docker/init.sh" ]
     env_file:
       - ./docker/app/.env
     ports:
