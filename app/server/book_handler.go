@@ -7,6 +7,7 @@ import (
 	"github.com/jinzhu/gorm"
 	"go-with-docker/model"
 	"go-with-docker/repository"
+	"go-with-docker/util/validator"
 	"net/http"
 	"strconv"
 )
@@ -34,12 +35,36 @@ func (app *App) HandleListBooks(w http.ResponseWriter, r *http.Request) {
 
 func (app *App) HandleCreateBook(w http.ResponseWriter, r *http.Request) {
 	form := &model.BookForm{}
+	// decode body
 	if err := json.NewDecoder(r.Body).Decode(form); err != nil {
 		app.logger.Info().Err(err).Msg("")
 		w.WriteHeader(http.StatusUnprocessableEntity)
 		fmt.Fprintf(w, `{"error": "%v"}`, appErrFormDecodingFailure)
 		return
 	}
+	// validate form
+	if err := app.validator.Struct(form); err != nil {
+		app.logger.Info().Err(err).Msg("")
+
+		resp := validator.ToErrResponse(err)
+		if resp == nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprintf(w, `{"error": "%v"}`, appErrFormErrResponseFailure)
+			return
+		}
+		respBody, err := json.Marshal(resp)
+		if err != nil {
+			app.logger.Info().Err(err).Msg("")
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprintf(w, `{"error": "%v"}`, appErrJsonCreationFailure)
+			return
+		}
+		w.WriteHeader(http.StatusUnprocessableEntity)
+		w.Write(respBody)
+		return
+	}
+
+	// transform form to model
 	bookModel, err := form.ToModel()
 	if err != nil {
 		app.logger.Info().Err(err).Msg("")
@@ -47,6 +72,7 @@ func (app *App) HandleCreateBook(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, `{"error": "%v"}`, appErrFormDecodingFailure)
 		return
 	}
+	// create book record
 	book, err := repository.CreateBook(app.db, bookModel)
 	if err != nil {
 		app.logger.Info().Err(err).Msg("")
@@ -97,6 +123,28 @@ func (app *App) HandleUpdateBook(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, `{"error": "%v"}`, appErrFormDecodingFailure)
 		return
 	}
+	// validate form
+	if err := app.validator.Struct(form); err != nil {
+		app.logger.Info().Err(err).Msg("")
+
+		resp := validator.ToErrResponse(err)
+		if resp == nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprintf(w, `{"error": "%v"}`, appErrFormErrResponseFailure)
+			return
+		}
+		respBody, err := json.Marshal(resp)
+		if err != nil {
+			app.logger.Info().Err(err).Msg("")
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprintf(w, `{"error": "%v"}`, appErrJsonCreationFailure)
+			return
+		}
+		w.WriteHeader(http.StatusUnprocessableEntity)
+		w.Write(respBody)
+		return
+	}
+
 	bookModel, err := form.ToModel()
 	if err != nil {
 		app.logger.Info().Err(err).Msg("")
