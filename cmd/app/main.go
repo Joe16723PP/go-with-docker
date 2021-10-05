@@ -7,6 +7,7 @@ import (
 	"go-with-docker/app/server"
 	"go-with-docker/config"
 	lr "go-with-docker/util/logger"
+	vr "go-with-docker/util/validator"
 	"net/http"
 )
 
@@ -14,13 +15,14 @@ func main() {
 	appConf := config.AppConfig()
 	address := fmt.Sprintf(":%d", appConf.Server.Port)
 	logger := lr.New(appConf.Debug)
+	validator := vr.New()
 	db, err := dbConn.New(appConf)
 	if err != nil {
 		logger.Fatal().Err(err).Msg("")
 		return
 	}
 
-	application := server.New(logger, db)
+	application := server.New(logger, db, validator)
 	appRouter := router.New(application)
 	logger.Info().Msgf("running on localhost %s", address)
 
