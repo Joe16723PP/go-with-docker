@@ -19,7 +19,7 @@ func New(a *server.App) *chi.Mux {
 	r.Method("GET", "/health/readiness", requestLog.NewHandler(a.HandleReady, l))
 
 	// grouping routes
-	r.Route("api/v1", func(r chi.Router) {
+	r.Route("/api/v1", func(r chi.Router) {
 		// attach middleware
 		r.Use(middleware.ContentTypeJson)
 		// Routes for books

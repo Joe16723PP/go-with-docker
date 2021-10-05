@@ -23,10 +23,10 @@ func (app *App) HandleReady(w http.ResponseWriter, r *http.Request) {
 func writeHealthy(w http.ResponseWriter) {
 	w.Header().Set("Content-Type", "text/plain")
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("."))
+	w.Write([]byte("Still alive"))
 }
 func writeUnhealthy(w http.ResponseWriter) {
 	w.Header().Set("Content-Type", "text/plain")
 	w.WriteHeader(http.StatusInternalServerError)
-	w.Write([]byte("."))
+	w.Write([]byte("Dead"))
 }
